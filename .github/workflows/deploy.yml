@@ -1,32 +1,46 @@
+# Имя рабочего процесса
 name: Deploy Telegram Bot
 
+# Триггеры запуска workflow
 on:
+  # Запускаем при любом пушинге в основную ветку
   push:
     branches:
-      - main # Действие срабатывает при пушах в главную ветку
+      - main
+  # Дополнительно добавляем расписание автоматического перезапуска каждые 4 часа
   schedule:
-    - cron: '0 */4 * * *' # Каждое начало часа каждые 4 часа
+    - cron: '0 */4 * * *'
 
+# Описание рабочих заданий
 jobs:
+  # Основной job для построения и развёртывания
   build-and-deploy:
+    # Операционная система, на которой выполняется задание
     runs-on: ubuntu-latest
+
+    # Последовательность шагов
     steps:
+      # Клонируем репозиторий
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Настройка окружения Node.js
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
+      # Установка зависимостей (предпочтительно используем mode=ci)
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build project
-        run: npm run build
+      # Компилируем проект (TypeScript => JavaScript)
+      - name: Compile the app
+        run: npm run tsc
 
-      - name: Run bot application
-        run: npm start
+      # Запуск приложения
+      - name: Start the bot
+        run: node dist/bot.js
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           ADMIN_ID: ${{ secrets.ADMIN_ID }}
